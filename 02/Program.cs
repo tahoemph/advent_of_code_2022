@@ -1,49 +1,73 @@
 ﻿using System.Collections;
 
 class Program {
-  public static Hashtable ChoiceValues = new Hashtable() {
-    {'X', 1},
-    {'Y', 2},
-    {'Z', 3}
-  };
-
-  public static Hashtable ResultValues = new Hashtable() {
+  static readonly Hashtable GameResultValues = new Hashtable() {
     {'A', new Hashtable() {
-        {'X', 3},
-        {'Y', 6},
-        {'Z', 0}
+        {'X', 3 + 1},
+        {'Y', 6 + 2},
+        {'Z', 0 + 3}
       }
     },
     {'B', new Hashtable() {
-        {'X', 0},
-        {'Y', 3},
-        {'Z', 6}
+        {'X', 0 + 1},
+        {'Y', 3 + 2},
+        {'Z', 6 + 3}
       }
     },
     {'C', new Hashtable() {
-        {'X', 6},
-        {'Y', 0},
-        {'Z', 3}
+        {'X', 6 + 1},
+        {'Y', 0 + 2},
+        {'Z', 3 + 3}
       }
     }
   };
 
-  public static void pass1(string[] lines) {
+  static readonly Hashtable ResultValues = new Hashtable() {
+    {'A', new Hashtable() {
+        {'X', 0 + 3},
+        {'Y', 3 + 1},
+        {'Z', 6 + 2}
+      }
+    },
+    {'B', new Hashtable() {
+        {'X', 0 + 1},
+        {'Y', 3 + 2},
+        {'Z', 6 + 3}
+      }
+    },
+    {'C', new Hashtable() {
+        {'X', 0 + 2},
+        {'Y', 3 + 3},
+        {'Z', 6 + 1}
+      }
+    }
+  };
+
+  static List<string> operations = new List<string>();
+
+  public static void pass(string[] lines, Hashtable values) {
     int result = 0;
-    foreach (string line in lines) {
-      string[] letters = line.Split(' ');
-      char opponent = letters[0][0];
-      char us = letters[1][0];
-      Hashtable ValueHash = (Hashtable)ResultValues[opponent];
-      result += (int)ValueHash[us] + (int)ChoiceValues[us];
+    foreach (string operation in operations) {
+      char opponent = operation[0];
+      char us = operation[1];
+      Hashtable ValueHash = (Hashtable)values[opponent];
+      result += (int)ValueHash[us];
     }
 
     Console.WriteLine(result);
   }
-  public static void pass2(string[] lines) {}
+
   public static void Main() {
     string[] lines = File.ReadAllLines("data.txt");
-    pass1(lines);
-    pass2(lines);
+
+    foreach (string line in lines) {
+      string[] letters = line.Split(' ');
+      char[] chars = {letters[0][0], letters[1][0]};
+      string result = new string(chars);
+      operations.Add(result);
+    }
+
+    pass(lines, GameResultValues);
+    pass(lines, ResultValues);
   }
 }
