@@ -80,5 +80,18 @@ class Program {
     } else {
       Console.WriteLine(shortest);
     }
+
+    var minimum = shortest;
+    for(int row = 0; row < numRows; row++) {
+      for(int col = 0; col < numCols; col++) {
+        if (map[row, col] == 'a' || map[row, col] == 'S') {
+          var length = shortestPath(map, row, col);
+          if (length > 0 && length < shortest) {
+            shortest = length;
+          }
+        }
+      }
+    }
+    Console.WriteLine(shortest);
   }
 }
