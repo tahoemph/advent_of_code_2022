@@ -1,13 +1,16 @@
 ﻿using System.Collections;
+using System.Numerics;
 
 class Monkey {
-  public List<int> items = new List<int>();
+  public static int commonBase = 1;
+  public List<long> items = new List<long>();
   public char operation;
   public int operand;
   public int test;
   public int trueTarget;
   public int falseTarget;
   public int inspected = 0;
+  public bool worryFree = true;
 
   public Monkey(string monkeyOpDescription, int monkeyTest, int monkeyTrueTarget, int monkeyFalseTarget) {
     test = monkeyTest;
@@ -31,8 +34,8 @@ class Monkey {
     }
   }
 
-  public int updateWorry(int worry) {
-    var rv = 0;
+  public long newWorry(long worry) {
+    long rv = 0;
     switch(operation) {
       case '+':
         rv = worry + operand;      
@@ -48,7 +51,13 @@ class Monkey {
         break;
     }
 
-    return (int)Math.Floor(rv/3.0);
+    if (worryFree) {
+      rv = (long)Math.Floor(rv/3.0);
+    }
+    if (commonBase > 1) {
+      return rv % commonBase;
+    }
+    return rv;
   }
 }
 
@@ -89,8 +98,9 @@ class Program {
       var monkey = monkies[monkeyNum];
       foreach(var item in monkies[monkeyNum].items) {
         monkey.inspected++;
-        var newWorry = monkey.updateWorry(item);
-        var targetMonkey = monkies[newWorry % monkey.test == 0 ? monkey.trueTarget : monkey.falseTarget];
+        var newWorry = monkey.newWorry(item);
+        var targetMonkeyIndex = ((newWorry % monkey.test) == 0 ? monkey.trueTarget : monkey.falseTarget);
+        var targetMonkey = monkies[targetMonkeyIndex];
         targetMonkey.items.Add(newWorry);
       }
       monkey.items.Clear();
@@ -105,7 +115,26 @@ class Program {
       playRound(monkeys);
     }
 
-    var inspected = new int[monkeys.Count];
+    var inspected = new long[monkeys.Count];
+    for(var ind = 0; ind < monkeys.Count; ind++) {
+      inspected[ind] = monkeys[ind].inspected;
+    }
+    Array.Sort(inspected);
+    Array.Reverse(inspected);
+    Console.WriteLine(inspected[0] * inspected[1]);
+
+    // worry-full version
+    monkeys = createMonkeys(lines);
+    var commonBase = 1;
+    foreach(var monkey in monkeys) {
+      monkey.worryFree = false;
+      commonBase *= monkey.test;
+    }
+    Monkey.commonBase = commonBase;
+    for(var i = 0; i < 10000; i++) {
+      playRound(monkeys);
+    }
+    inspected = new long[monkeys.Count];
     for(var ind = 0; ind < monkeys.Count; ind++) {
       inspected[ind] = monkeys[ind].inspected;
     }
