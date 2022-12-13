@@ -9,6 +9,7 @@ class PacketElement {
 
 class Packet {
   public List<PacketElement> packet;
+  public string input;
 
   private string getToken(string input, ref int offset) {
     string rv = "";
@@ -51,6 +52,7 @@ class Packet {
   }
   public Packet(string elem) {
     int ind = 0;
+    input = elem;
     packet = ParseElement(elem, ref ind);
   }
 }
@@ -101,6 +103,10 @@ class Program {
     };
     return 0;
   }
+
+  private static int comparePackets(Packet x, Packet y) {
+    return PacketElementListComparer(x.packet, y.packet);
+  }
   public static void Main() {
     var lines = File.ReadAllLines("data.txt");
     Packet[,] input = new Packet[(lines.Length + 1)/3, 2];
@@ -119,5 +125,21 @@ class Program {
       }
     }
     System.Console.WriteLine(indiceSum);
+
+    var packetList = new List<Packet>();
+    packetList.Add(new Packet("[[2]]"));
+    packetList.Add(new Packet("[[6]]"));
+    foreach(var packet in input) {
+      packetList.Add(packet);
+    }
+    packetList.Sort(comparePackets);
+    var dividerPackets = new List<int>();
+    for(var ind = 0; ind < packetList.Count; ind++) {
+      if (packetList[ind].input == "[[2]]")
+        dividerPackets.Add(ind + 1);
+      else if (packetList[ind].input == "[[6]]")
+        dividerPackets.Add(ind + 1);
+    }
+    System.Console.WriteLine(dividerPackets[0] * dividerPackets[1]);
   }
 }
