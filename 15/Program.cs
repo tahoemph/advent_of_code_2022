@@ -23,6 +23,14 @@ class Sensor {
     return _sensorCol + _radius;
   }
 
+  public int minRow() {
+    return _sensorRow - _radius;
+  }
+
+  public int maxRow() {
+    return _sensorRow + _radius;
+  }
+
   private int radius() {
     return _radius;
   }
@@ -37,6 +45,29 @@ class Sensor {
 
   public bool isBeacon(int row, int col) {
     return row == _beaconRow && col == _beaconCol;
+  }
+
+  public int nextCol(int row, int col) {
+    if (canSee(row, col)) {
+      var d = distance(row, col);
+      // going from high col to low col _sensorCol will be smaller then the outgoing col so it is minus.
+      var rv = col + (_radius - Math.Abs(row - _sensorRow));
+      if (_sensorCol < col) {
+        rv -= col - _sensorCol;
+      } else {
+        rv += _sensorCol - col;
+      }
+      var d1 = distance(row, rv);
+      if (d1 != _radius) {
+        System.Console.WriteLine("WTF distance");
+      }
+      if (rv < col) {
+        System.Console.WriteLine("WTF");
+      } else {
+        return rv;
+      }
+    }
+    return col;
   }
 }
 
@@ -61,7 +92,7 @@ class Program {
       sensors.Add(new Sensor(sensorRow, sensorCol, beaconRow, beaconCol));
     }
 
-    int minCol = 100000;
+    int minCol = 100000000;
     int maxCol = 0;
     foreach(var sensor in sensors) {
       minCol = Math.Min(minCol, sensor.minCol());
@@ -84,5 +115,37 @@ class Program {
     }
 
     System.Console.WriteLine(notPossible);
+
+    int minRow = 10000000;
+    int maxRow = 0;
+    foreach(var sensor in sensors) {
+      minRow = Math.Min(minRow, sensor.minRow());
+      maxRow = Math.Max(maxRow, sensor.maxRow());
+    } 
+
+    minCol = Math.Max(0, minCol);
+    minRow = Math.Max(0, minRow);
+    maxCol = Math.Min(4000000, maxCol);
+    maxRow = Math.Min(4000000, maxRow);
+
+    for (row = minRow; row <= maxRow; row++) {
+      for(var col = minCol; col <= maxCol; col++) {
+        var prevCol = col;
+        foreach(var sensor in sensors) {
+          int lastCol = col;
+          col = sensor.nextCol(row, col);
+          if (col != lastCol) {
+            break;
+          }
+          if (col > maxCol) {
+            break;
+          }
+        }
+        if (col == prevCol) {
+          System.Console.WriteLine($"answer {row} {col} {col * 4000000L + row}");
+          return;
+        }
+      }
+    }
   }
 }
