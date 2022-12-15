@@ -26,11 +26,11 @@ class Game {
     }
   }
 
-  public void dump() {
+  public (int minRow, int maxRow, int minCol, int maxCol) dimensions() {
     int maxRow = 0, minRow = 1000, maxCol = 0, minCol = 1000;
     for(var row = 0; row < board.GetLength(0); row++) {
       for(var col = 0; col < board.GetLength(1); col++) {
-        if (board[row, col] == 'o') {
+        if (board[row, col] != '.') {
           maxRow = maxRow > row ? maxRow : row;
           minRow = minRow < row ? minRow : row;
           maxCol = maxCol > col ? maxCol : col;
@@ -38,6 +38,11 @@ class Game {
         }
       }
     }
+    return (minRow, maxRow, minCol, maxCol);
+  }
+  public void dump() {
+    int maxRow, minRow, maxCol, minCol;
+    (minRow, maxRow, minCol, maxCol) = dimensions();
 
     var minimumRow = Math.Max(0, minRow - 2);
     for(int row = minimumRow; row < Math.Min(board.GetLength(0), maxRow + 2); row++) {
@@ -68,12 +73,12 @@ class Game {
     }
   }
 
-  public bool dropSand() {
+  public (int row, int col, bool oob) dropSand() {
     int curRow = 0;
     int curCol = 500;
     while(true) {
       if (curRow + 1 >= board.GetLength(0) || curRow < 0 || curCol >= board.GetLength(1) || curCol < 0) {
-        return true;
+        return (curRow, curCol, true);
       }
 
       if (board[curRow + 1, curCol] == '.') {
@@ -87,7 +92,7 @@ class Game {
           curCol += 1;
         } else {
           board[curRow, curCol] = 'o';
-          return false;
+          return (curRow, curCol, false);
         }
       }
     }
@@ -106,8 +111,31 @@ class Program {
     var done = false;
     do {
       grains++;
-      done = game.dropSand();
+      (_, _, done) = game.dropSand();
     } while(!done);
+    System.Console.WriteLine(grains - 1);
+
+    // Part 2
+    game = new Game();
+    foreach(var line in lines) {
+      game.constructPath(line);
+    }
+
+    var (minRow, maxRow, minCol, maxCol) = game.dimensions();
+    game.constructPath($"0,{maxRow + 2} -> 999,{maxRow + 2}");
+
+    grains = 0;
+    done = false;
+    var x = 0;
+    var y = 0;
+    do {
+      grains++;
+      (y, x, done) = game.dropSand();
+      if (done) {
+        System.Console.WriteLine("base not wide enough");
+        break;
+      }
+    } while(!(x == 500 && y == 0));
     System.Console.WriteLine(grains);
   }
 }
